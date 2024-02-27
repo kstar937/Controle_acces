@@ -9,9 +9,9 @@ board = Arduino('COM7')
 
 
 #led_pin = board.get_pin('d:9:o')
-led_pin_r = board.get_pin('d:8:o')
-led_pin_b = board.get_pin('d:10:o')
-led_pin_g = board.get_pin('d:9:o')
+led_pin_1 = board.get_pin('d:8:o')
+led_pin_2 = board.get_pin('d:9:o')
+led_pin_3 = board.get_pin('d:10:o')
 
 buzzer = board.get_pin('d:11:o')
 servo = board.get_pin('d:{}:s'.format(12))
@@ -37,10 +37,10 @@ temps_verrouillage = 5
 
 nb_refus_acces=0
 
-def rgb_led(r,g,b):
-    led_pin_r.write(r)
-    led_pin_g.write(g)
-    led_pin_b.write(b)
+def led(l1,l2,l3):
+    led_pin_1.write(l1)
+    led_pin_2.write(l2)
+    led_pin_3.write(l3)
 
 
 def list_a_str(s):
@@ -91,9 +91,8 @@ def verfication_commande(liste):
         if liste[0] != '#':
             if len(liste) == 4:
                 if liste in code_utilisateur.values():
-                    versLCD('accès ouvert')
+                    versLCD('acces ouvert')
                    # led_pin.write(1)
-                    rgb_led(1,0,0)
                     servo.write(90)
                     board.digital[8].write(1)
                     buzzer.write(1)
@@ -102,14 +101,13 @@ def verfication_commande(liste):
                     liste_commandes=[]
                     a=chronometre(temps_verrouillage)
                     if a != 0:
-                        versLCD('accès fermé')
+                        versLCD('acces ferme')
                         servo.write(180)
                         board.digital[8].write(0)
 
 
                 else:
-                    versLCD('accès refusé')
-                    ser.write(("accesrefuse".strip()).encode())
+                    versLCD('acces refuse')
                     nb_refus_acces = nb_refus_acces + 1
                     liste_commandes=[]
         else:
@@ -117,19 +115,17 @@ def verfication_commande(liste):
                 if liste == code_installateur:
                     liste_commandes=[]
                     mode_installateur = True
-                    versLCD('mode programateur activé')
-                    rgb_led(0,1,0)
+                    versLCD('prog. active')
                 else:
                     mode_installateur = False
-                    ser.write(("accesrefuse".strip()).encode())
-                    versLCD('mode programateur refusé')
-                    rgb_led(0,0,0)
+                    versLCD('prog. refuse')
                     liste_commandes=[]
 
         if mode_installateur == True:
 
             if liste[0] == '0':
-                versLCD("Insérer le nouveau code de programmation")
+                versLCD("code de programmation")
+                led(1,1,1)
                 nouveau_code = ['#']
                 liste_commandes=[]
                 while len(nouveau_code) < 7:
@@ -139,36 +135,43 @@ def verfication_commande(liste):
                         versLCD(nouveau_code)
 
                 if len(nouveau_code) == 7:
-                    versLCD("Code de programmation modifié")
+                    versLCD("Code modifié")
+                    led(1,1,1)
                     code_installateur=nouveau_code
                     liste_commandes=[]
 
             elif liste[0] == '1':
+                led(1,0,0)
                 if liste[1] == '0':
                     MDP_et_carte = False
                     MDP_ou_carte = True
-                    versLCD("Nécéssité de la carte ou MDP pour rentrer")
+                    versLCD("carte ou MDP")
                     liste_commandes=[]
+                    led(1,1,1)
 
                 elif liste[1] == '1':
                     MDP_et_carte = True
                     MDP_ou_carte = False
-                    versLCD("Nécéssité de la carte et MDP pour rentrer")
+                    versLCD("carte et MDP")
                     liste_commandes=[]
+                    led(1,1,1)
 
                 elif liste[1] == '2':
                     Modification_MDP_possible = False
-                    versLCD("La modification des MDP utilisateur est impossible")
+                    versLCD("modifi. desactive")
                     liste_commandes=[]
+                    led(1,1,1)
 
                 elif liste[1] == '3':
                     Modification_MDP_possible = True
-                    versLCD("La modification des MDP utilisateur est possible")
+                    versLCD("La modifi. active")
                     liste_commandes=[]
+                    led(1,1,1)
 
 
             elif liste[0] == '2':
-                versLCD("Insérer la temporisation")
+                versLCD("temporisation")
+                led(0,1,0)
                 nouveau_temps = []
                 liste_commandes=[]
                 while len(nouveau_temps) < 2:
@@ -179,12 +182,14 @@ def verfication_commande(liste):
 
                 if len(nouveau_temps) == 2:
                     temps_verrouillage=float(list_a_str_cd(nouveau_temps))
-                    versLCD("Temporisation modifié :")
+                    versLCD("Temp. modifié :")
+                    led(1,1,1)
                     liste_commandes=[]
 
 
             elif liste[0] == '3':
-                versLCD("Insérer le nouveau code public")
+                versLCD("nouveau code")
+                led(0,0,1)
                 nouveau_CP = []
                 liste_commandes=[]
                 while len(nouveau_CP) < 4:
@@ -194,28 +199,33 @@ def verfication_commande(liste):
                         versLCD(nouveau_CP)
 
                 if len(nouveau_CP) == 4:
-                    versLCD("Code Public modifié")
+                    versLCD("Code modifie")
                     code_public=nouveau_CP
                     liste_commandes=[]
+                    led(1,1,1)
 
 
 
             elif liste[0] == '4':
+                led(1,0,1)
                 if liste[1] == '0':
                     etat_alarme_sabotage = False
-                    versLCD("L’alarme anti-sabotage désactivée")
+                    versLCD("alarme dsact")
                     liste_commandes=[]
+                    led(1,1,1)
 
                 elif liste[1] == '1':
                     etat_alarme_sabotage = True
-                    versLCD("L’alarme anti-sabotage activée")
+                    versLCD("alarme active")
                     liste_commandes=[]
+                    led(1,1,1)
 
 
 
 
             elif liste[0] == '5':
-                versLCD("Entrer le num serie ")
+                led(1,1,0)
+                versLCD("num serie ")
                 numero_serie = []
                 liste_commandes=[]
                 while len(numero_serie) < 3:
@@ -225,7 +235,7 @@ def verfication_commande(liste):
                         versLCD(numero_serie)
 
                 if len(numero_serie) == 3:
-                    versLCD("Entrer le code usager")
+                    versLCD("code usager")
                     code_nouv_util = []
                     while len(code_nouv_util) < 4:
                         response5 = ser.readline().decode('ascii').rstrip()
@@ -236,12 +246,14 @@ def verfication_commande(liste):
                     if len(code_nouv_util) == 4:
                         versLCD("Utilisateur sauvegarde")
                         code_utilisateur[list_a_str_cd(numero_serie)]=code_nouv_util
+                        led(1,1,1)
 
 
 
 
             elif liste[0] == '7':
-                versLCD("Entrer le num serie à supprimer")
+                led(0,1,1)
+                versLCD("N a supprimer")
                 numero_serie_a_supprimer = []
                 liste_commandes=[]
                 while len(numero_serie_a_supprimer) < 3:
@@ -252,14 +264,15 @@ def verfication_commande(liste):
 
                 if len(numero_serie_a_supprimer)==3:
                     code_utilisateur.pop(list_a_str_cd(numero_serie_a_supprimer))
-                    versLCD('!utilisateu Supprime')
+                    versLCD('utilisateur Supprime')
+                    led(1,1,1)
 
 
 
             elif liste[0] == 'A':
                 mode_installateur = False
-                rgb_led(0,0,0)
-                versLCD('mode programateur desactivé')
+                led(0,0,0)
+                versLCD('prog desact')
                 liste_commandes=[]
 
     except:
