@@ -334,3 +334,9 @@ while True:
             buzzer.write(0)
             i=i+1
         nb_refus_acces=0
+
+
+
+
+
+        
